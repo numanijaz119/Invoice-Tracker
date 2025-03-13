@@ -1,0 +1,171 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Szczegóły Sprawy: {{ case.case_number }}</h2>
+
+<!-- Dane Klienta -->
+<h4>Dane Klienta</h4>
+<p>
+  <strong>ID Klienta:</strong> {{ case.client_id }}<br>
+  <strong>NIP:</strong> {{ case.client_nip }}<br>
+  <strong>Nazwa firmy:</strong> {{ case.client_company_name }}<br>
+  <strong>Email:</strong> {{ invoice.client_email if invoice.client_email else "Brak" }}<br>
+  <strong>Adres:</strong>
+  {% if invoice.client_address %}
+    {{ invoice.client_address }}
+  {% else %}
+    Brak
+  {% endif %}
+</p>
+
+<!-- Dane Faktury -->
+<h4>Dane Faktury</h4>
+<table class="table table-bordered table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>Numer Faktury</th>
+      <th>Data Wystawienia</th>
+      <th>Termin Płatności</th>
+      <th>Kwota (zł)</th>
+      <th>Kwota Zapłacona (zł)</th>
+      <th>Pozostało Do Zapłaty (zł)</th>
+      <th>Waluta</th>
+      <th>Dni od/do terminu</th>
+      <th>Postęp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>{{ invoice.invoice_number }}</td>
+      <td>
+        {% if invoice.invoice_date %}
+          {{ invoice.invoice_date.strftime('%Y-%m-%d') }}
+        {% else %}
+          Brak
+        {% endif %}
+      </td>
+      <td>
+        {% if invoice.payment_due_date %}
+          {{ invoice.payment_due_date.strftime('%Y-%m-%d') }}
+        {% else %}
+          Brak
+        {% endif %}
+      </td>
+      <td>{{ "%.2f"|format(invoice.gross_price/100 if invoice.gross_price else 0) }} zł</td>
+      <td>
+        {% if invoice.paid_price %}
+          {{ "%.2f"|format(invoice.paid_price/100) }} zł
+        {% else %}
+          0.00 zł
+        {% endif %}
+      </td>
+      <td>
+        {% if left_to_pay %}
+          {{ "%.2f"|format(left_to_pay/100) }} zł
+        {% else %}
+          0.00 zł
+        {% endif %}
+      </td>
+      <td>{{ invoice.currency or "PLN" }}</td>
+      <td>
+        {% if days_display is not none %}
+          {% if days_display < 0 %}
+            -{{ days_display|abs }}
+          {% else %}
+            {{ days_display }}
+          {% endif %}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        <div class="progress" style="height: 20px;">
+          <div class="progress-bar" role="progressbar"
+               style="width: {{ progress_percent }}%; background-color: #28a745; color: black; min-width: 30px; text-align: center; line-height: 20px;"
+               aria-valuenow="{{ progress_percent }}"
+               aria-valuemin="0" aria-valuemax="100">
+            {{ progress_percent }}%
+          </div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="mb-3">
+  {% if case.status != "active" %}
+    <a href="{{ url_for('reopen_case', case_number=case.case_number) }}" class="btn btn-sm btn-warning">
+      PRZYWRÓĆ DO SPRAW AKTYWNYCH
+    </a>
+  {% elif invoice.status != "opłacona" %}
+    <a href="{{ url_for('mark_invoice_paid', invoice_id=invoice.id) }}" class="btn btn-sm btn-success">
+      Oznacz jako opłaconą / Zamknij sprawę
+    </a>
+  {% endif %}
+</div>
+
+<!-- Ręczne wysyłanie powiadomień -->
+<h4>Ręczne wysyłanie powiadomień</h4>
+<div class="mb-3">
+  <a href="{{ url_for('send_manual', case_number=case.case_number, stage='przeds') }}" class="btn btn-secondary me-1">1 dzień przed</a>
+  <a href="{{ url_for('send_manual', case_number=case.case_number, stage='7dni') }}" class="btn btn-secondary me-1">7 dni po</a>
+  <a href="{{ url_for('send_manual', case_number=case.case_number, stage='14dni') }}" class="btn btn-secondary me-1">14 dni po</a>
+  <a href="{{ url_for('send_manual', case_number=case.case_number, stage='21dni') }}" class="btn btn-secondary me-1">21 dni po</a>
+  <a href="{{ url_for('send_manual', case_number=case.case_number, stage='30dni') }}" class="btn btn-secondary">30 dni po</a>
+</div>
+
+<!-- Historia wysłanych powiadomień -->
+<h4>Historia wysłanych powiadomień</h4>
+{% if notifications and notifications|length > 0 %}
+  <table class="table table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>Data wysłania</th>
+        <th>Etap</th>
+        <th>Temat</th>
+        <th>Treść</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in notifications %}
+      <tr>
+        <td>{{ log.sent_at.strftime('%Y-%m-%d %H:%M:%S') if log.sent_at else '' }}</td>
+        <td>{{ log.stage }}</td>
+        <td>{{ log.subject }}</td>
+        <td>
+          <button class="btn btn-sm btn-secondary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#logModal{{ log.id }}">
+            Podgląd
+          </button>
+          <div class="modal fade" id="logModal{{ log.id }}"
+               tabindex="-1"
+               aria-labelledby="logModalLabel{{ log.id }}"
+               aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="logModalLabel{{ log.id }}">{{ log.subject }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <pre>{{ log.body }}</pre>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Zamknij
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Brak wysłanych powiadomień.</p>
+{% endif %}
+
+<a href="{{ url_for('active_cases') }}" class="btn btn-primary">Powrót do listy spraw</a>
+{% endblock %}

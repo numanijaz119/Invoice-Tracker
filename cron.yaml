@@ -1,0 +1,17 @@
+cron:
+- description: "Synchronizacja partia 1"
+  url: /sync_db_batch?offset=0&limit=100
+  schedule: every 15 minutes
+
+- description: "Synchronizacja partia 2"
+  url: /sync_db_batch?offset=100&limit=100
+  schedule: every 15 minutes offset 2
+
+- description: "Synchronizacja partia 3"
+  url: /sync_db_batch?offset=200&limit=100
+  schedule: every 15 minutes offset 4
+
+# ... i tak dalej, aby w sumie pokryć pełen zakres offsetów,
+# który odpowiada maksymalnej liczbie faktur w inFakt.
+# Każde zadanie wystartuje co 15 minut, z innym offsetem,
+# tak by do końca dnia (lub do określonej godziny) przetworzyć wszystko.

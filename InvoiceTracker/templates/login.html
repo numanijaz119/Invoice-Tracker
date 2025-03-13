@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Logowanie</h2>
+<form method="post" class="row g-3">
+  <div class="col-md-6">
+    <label for="username" class="form-label">Nazwa użytkownika:</label>
+    <input type="text" name="username" id="username" class="form-control" required>
+  </div>
+  <div class="col-md-6">
+    <label for="password" class="form-label">Hasło:</label>
+    <input type="password" name="password" id="password" class="form-control" required>
+  </div>
+  <div class="col-12">
+    <button type="submit" class="btn btn-primary">Zaloguj</button>
+  </div>
+</form>
+{% endblock %}

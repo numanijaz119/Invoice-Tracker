@@ -1,0 +1,143 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Lista Spraw Klienta</h2>
+  <div>
+    <a href="{{ url_for('manual_sync') }}" class="btn btn-info me-2">Ręcznie Synchronizuj</a>
+  </div>
+</div>
+
+<div class="mb-4">
+  <p><strong>Łączna kwota zadłużenia:</strong> {{ "%.2f"|format(total_debt_all) }} zł</p>
+  <p><strong>Liczba spraw aktywnych:</strong> {{ active_count }}</p>
+</div>
+
+{% if client_details %}
+<p>
+  <strong>Nazwa Firmy:</strong> {{ client_details.client_company_name }}<br>
+  <strong>NIP:</strong> {{ client_details.client_nip }}<br>
+  <strong>Email:</strong> {{ client_details.client_email }}<br>
+  <strong>Adres:</strong> {{ client_details.client_address if client_details.client_address else "Brak" }}
+</p>
+{% endif %}
+
+<h4>Aktywne sprawy:</h4>
+<table class="table table-bordered table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>Numer Sprawy</th>
+      <th>Nazwa</th>
+      <th>NIP</th>
+      <th>Email</th>
+      <th>Kwota Zadłużenia (zł)</th>
+      <th>Dni od/do terminu</th>
+      <th>Postęp</th>
+      <th>Szczegóły</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in active_cases %}
+    <tr>
+      <td>{{ c.case_number }}</td>
+      <td>{{ c.client_company_name }}</td>
+      <td>{{ c.client_nip }}</td>
+      <td>{{ c.client_email }}</td>
+      <td>{{ "%.2f"|format(c.total_debt) }}</td>
+      <td>
+        {% if c.days_diff is not none %}
+          {% if c.days_diff < 0 %}
+            -{{ c.days_diff|abs }}
+          {% else %}
+            {{ c.days_diff }}
+          {% endif %}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        <div class="progress" style="height: 20px;">
+          <div class="progress-bar" role="progressbar"
+               style="width: {{ c.progress_percent }}%;
+               {% if c.progress_percent == 0 %}
+                 background-color: gray;
+               {% elif c.progress_percent == 100 %}
+                 background-color: green;
+               {% else %}
+                 background-color: #28a745;
+               {% endif %}
+               color: black; min-width: 30px; text-align: center; line-height: 20px;"
+               aria-valuenow="{{ c.progress_percent }}"
+               aria-valuemin="0" aria-valuemax="100">
+            {{ c.progress_percent }}%
+          </div>
+        </div>
+      </td>
+      <td>
+        <a href="{{ url_for('case_detail', case_number=c.case_number) }}" class="btn btn-sm btn-info">Pokaż</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h4>Zakończone sprawy:</h4>
+<table class="table table-bordered table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>Numer Sprawy</th>
+      <th>Nazwa</th>
+      <th>NIP</th>
+      <th>Email</th>
+      <th>Kwota Zadłużenia (zł)</th>
+      <th>Dni od/do terminu</th>
+      <th>Postęp</th>
+      <th>Szczegóły</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in completed_cases %}
+    <tr>
+      <td>{{ c.case_number }}</td>
+      <td>{{ c.client_company_name }}</td>
+      <td>{{ c.client_nip }}</td>
+      <td>{{ c.client_email }}</td>
+      <td>{{ "%.2f"|format(c.total_debt) }}</td>
+      <td>
+        {% if c.days_diff is not none %}
+          {% if c.days_diff < 0 %}
+            -{{ c.days_diff|abs }}
+          {% else %}
+            {{ c.days_diff }}
+          {% endif %}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        <div class="progress" style="height: 20px;">
+          <div class="progress-bar" role="progressbar"
+               style="width: {{ c.progress_percent }}%;
+               {% if c.progress_percent == 0 %}
+                 background-color: gray;
+               {% elif c.progress_percent == 100 %}
+                 background-color: green;
+               {% else %}
+                 background-color: #28a745;
+               {% endif %}
+               color: black; min-width: 30px; text-align: center; line-height: 20px;"
+               aria-valuenow="{{ c.progress_percent }}"
+               aria-valuemin="0" aria-valuemax="100">
+            {{ c.progress_percent }}%
+          </div>
+        </div>
+      </td>
+      <td>
+        <a href="{{ url_for('case_detail', case_number=c.case_number) }}" class="btn btn-sm btn-info">Pokaż</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<a href="{{ url_for('active_cases') }}" class="btn btn-primary">Powrót do aktywnych spraw</a>
+{% endblock %}

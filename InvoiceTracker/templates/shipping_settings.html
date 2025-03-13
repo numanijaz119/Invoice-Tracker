@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+  <h2>Ustawienia wysyłki powiadomień</h2>
+  <p>
+    Ustaw offset (w dniach) względem terminu płatności:<br>
+    * Wartość ujemna: powiadomienie przed terminem<br>
+    * Wartość dodatnia: powiadomienie po terminie<br>
+    Po zapisaniu ustawień powiadomienia będą wysyłane według nowych ustawień od momentu zapisu.
+  </p>
+  <form method="post" class="row g-3">
+    {% for key, value in settings.items() %}
+      <div class="col-md-6">
+        <label for="{{ key }}" class="form-label">{{ key }}:</label>
+        <input type="number" name="{{ key }}" id="{{ key }}" class="form-control" value="{{ value }}">
+      </div>
+    {% endfor %}
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Zapisz ustawienia</button>
+    </div>
+  </form>
+{% endblock %}

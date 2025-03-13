@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Lista Spraw Windykacyjnych (Aktywne)</h2>
+  <div>
+    <!-- Przycisk łącznej synchronizacji (dodawanie nowych + aktualizacja istniejących) -->
+    <a href="{{ url_for('manual_sync') }}" class="btn btn-info me-2">Ręcznie Synchronizuj</a>
+  </div>
+</div>
+<div class="mb-4">
+  <p><strong>Łączna kwota zadłużenia:</strong> {{ "%.2f"|format(total_debt_all) }} zł</p>
+  <p><strong>Liczba spraw aktywnych:</strong> {{ active_count }}</p>
+</div>
+<form method="get" class="row g-3 mb-4">
+  <div class="col-md-4">
+    <input type="text" name="search" class="form-control" placeholder="Szukaj (ID klienta, NIP, nazwa, email, nr sprawy)" value="{{ search_query }}">
+  </div>
+  <div class="col-md-3">
+    <select name="sort_by" class="form-select">
+      <option value="case_number" {% if sort_by=='case_number' %}selected{% endif %}>Numer Sprawy</option>
+      <option value="client_id" {% if sort_by=='client_id' %}selected{% endif %}>ID Klienta</option>
+      <option value="client_company_name" {% if sort_by=='client_company_name' %}selected{% endif %}>Nazwa</option>
+      <option value="client_nip" {% if sort_by=='client_nip' %}selected{% endif %}>NIP</option>
+      <option value="client_email" {% if sort_by=='client_email' %}selected{% endif %}>Email</option>
+      <option value="total_debt" {% if sort_by=='total_debt' %}selected{% endif %}>Kwota Zadłużenia</option>
+      <option value="days_diff" {% if sort_by=='days_diff' %}selected{% endif %}>Dni od/do terminu</option>
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select name="sort_order" class="form-select">
+      <option value="asc" {% if sort_order=='asc' %}selected{% endif %}>Rosnąco</option>
+      <option value="desc" {% if sort_order=='desc' %}selected{% endif %}>Malejąco</option>
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-primary w-100">Szukaj/Sortuj</button>
+  </div>
+</form>
+<table class="table table-bordered table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>Numer Sprawy</th>
+      <th>ID Klienta</th>
+      <th>Nazwa</th>
+      <th>NIP</th>
+      <th>Email</th>
+      <th>Kwota Zadłużenia (zł)</th>
+      <th>Dni od/do terminu</th>
+      <th>Postęp</th>
+      <th>Szczegóły</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in cases %}
+    <tr>
+      <td>{{ c.case_number }}</td>
+      <td>{{ c.client_id }}</td>
+      <td>
+        <a href="{{ url_for('client_cases', client_id=c.client_id) }}">
+          {{ c.client_company_name }}
+        </a>
+      </td>
+      <td>{{ c.client_nip }}</td>
+      <td>{{ c.client_email }}</td>
+      <td>{{ "%.2f"|format(c.total_debt) }}</td>
+      <td>
+        {% if c.days_diff is not none %}
+          {% if c.days_diff < 0 %}
+            -{{ c.days_diff|abs }}
+          {% else %}
+            {{ c.days_diff }}
+          {% endif %}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        <div class="progress" style="height: 20px;">
+          <div class="progress-bar" role="progressbar"
+               style="width: {{ c.progress_percent }}%;
+               {% if c.progress_percent == 0 %}
+                 background-color: gray;
+               {% elif c.progress_percent == 100 %}
+                 background-color: green;
+               {% else %}
+                 background-color: #28a745;
+               {% endif %}
+               color: black; min-width: 30px; text-align: center; line-height: 20px;"
+               aria-valuenow="{{ c.progress_percent }}"
+               aria-valuemin="0" aria-valuemax="100">
+            {{ c.progress_percent }}%
+          </div>
+        </div>
+      </td>
+      <td>
+        <a href="{{ url_for('case_detail', case_number=c.case_number) }}"
+           class="btn btn-sm btn-info">
+          Pokaż
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
