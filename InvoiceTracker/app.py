@@ -49,10 +49,20 @@ def create_app():
     db_user = os.getenv('DB_USER')
     db_password = os.getenv('DB_PASSWORD')
     db_name = os.getenv('DB_NAME')
+
+    db_host = os.getenv('DB_HOST', 'localhost')
+    db_port = os.getenv('DB_PORT', '5432')
+
     instance_connection_name = os.getenv('INSTANCE_CONNECTION_NAME')
+    # app.config['SQLALCHEMY_DATABASE_URI'] = (
+    #     f"postgresql+psycopg2://{db_user}:{db_password}@/{db_name}?host=/cloudsql/{instance_connection_name}"
+    # )
+    
+# Local PostgreSQL URI
     app.config['SQLALCHEMY_DATABASE_URI'] = (
-        f"postgresql+psycopg2://{db_user}:{db_password}@/{db_name}?host=/cloudsql/{instance_connection_name}"
+        f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
     )
+
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
