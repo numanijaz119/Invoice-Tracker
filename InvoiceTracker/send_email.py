@@ -31,6 +31,7 @@ def send_email(to_email, subject, body, html=False):
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
+            server.connect(SMTP_SERVER, SMTP_PORT) # Explicit connection 
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.sendmail(EMAIL_FROM, to_email, msg.as_string())
             print(f"Email wysłany do {to_email}")

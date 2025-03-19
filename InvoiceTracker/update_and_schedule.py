@@ -6,8 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 
 from .src.api.api_client import InFaktAPIClient
-from .shipping_settings import NOTIFICATION_OFFSETS
-from .models import db, NotificationLog, Invoice, Case
+from .models import db, NotificationLog, Invoice, Case, NotificationSettings
 from .send_email import send_email
 from .mail_templates import MAIL_TEMPLATES
 from .update_db import update_invoices_in_db_batch as update_database
@@ -30,6 +29,10 @@ def run_daily_notifications():
     active_invoices = Invoice.query.join(Case, Invoice.case_id == Case.id)\
                                    .filter(Case.status == "active")\
                                    .all()
+    
+    # Get notification settings from database
+    notification_settings = NotificationSettings.get_all_settings()
+    
     for invoice in active_invoices:
         if not invoice.payment_due_date:
             continue
@@ -54,7 +57,7 @@ def run_daily_notifications():
         if stage_text is None:
             continue
 
-        offset_value = NOTIFICATION_OFFSETS.get(stage_text)
+        offset_value = notification_settings.get(stage_text)
         if offset_value is None:
             continue
 
@@ -65,6 +68,11 @@ def run_daily_notifications():
                 continue
 
             subject = template["subject"].format(case_number=invoice.invoice_number)
+            
+            # Get the offset value for stage 4 from notification settings
+            stage_4_offset = notification_settings.get("Powiadomienie o zamiarze skierowania sprawy do windykatora zewnętrznego i publikacji na giełdzie wierzytelności", 21)
+            stage_4_date = (invoice.payment_due_date + timedelta(days=stage_4_offset)).strftime('%Y-%m-%d')
+            
             body_html = template["body_html"].format(
                 company_name=invoice.client_company_name,
                 due_date=invoice.payment_due_date.strftime('%Y-%m-%d'),
@@ -74,7 +82,7 @@ def run_daily_notifications():
                 city="",
                 nip=invoice.client_nip,
                 debt_amount="%.2f" % (invoice.gross_price / 100 if invoice.gross_price else 0),
-                stage_4_date=(invoice.payment_due_date + timedelta(days=NOTIFICATION_OFFSETS.get("Przekazanie sprawy do windykatora zewnętrznego", 30))).strftime('%Y-%m-%d')
+                stage_4_date=stage_4_date
             )
             recipient = invoice.client_email
             if recipient and recipient != "N/A":

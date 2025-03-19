@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import logging
 
 # Modele bazy danych
-from .models import db, Invoice, NotificationLog, Case, SyncStatus
+from .models import db, Invoice, NotificationLog, Case, SyncStatus, NotificationSettings
 
 # Inne moduły
 from .send_email import send_email
@@ -14,7 +14,10 @@ from .shipping_settings import NOTIFICATION_OFFSETS, SYNC_CONFIG
 from .mail_templates import MAIL_TEMPLATES
 from .scheduler import start_scheduler  # Scheduler uruchamiany w tle
 from .mail_utils import generate_email  # Funkcja generująca treść wiadomości
-from .update_db import run_full_sync, sync_new_invoices, update_existing_cases
+from .update_db import run_full_sync
+
+# Importowanie Flask-Migrate
+from flask_migrate import Migrate
 
 load_dotenv()
 
@@ -37,7 +40,7 @@ STAGE_LABELS = {
     "Powiadomienie o upływie terminu płatności": "Powiadomienie o upływie terminu płatności",
     "Wezwanie do zapłaty": "Wezwanie do zapłaty",
     "Powiadomienie o zamiarze skierowania sprawy do windykatora zewnętrznego i publikacji na giełdzie wierzytelności":
-        "Powiadomienie o zamiarze skierowania sprawy do windykatora zewnętrznego i publikacji na giełdzie wierzytelności",
+    "Powiadomienie o zamiarze skierowania sprawy do windykatora zewnętrznego i publikacji na giełdzie wierzytelności",
     "Przekazanie sprawy do windykatora zewnętrznego": "Przekazanie sprawy do windykatora zewnętrznego"
 }
 
@@ -66,6 +69,9 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
+
+    # Initialize Flask-Migrate
+    migrate = Migrate(app, db)
 
     # Tworzenie tabel bazy przy pierwszym uruchomieniu
     @app.before_first_request
@@ -181,14 +187,27 @@ def create_app():
                         "Przekazanie sprawy do windykatora zewnętrznego": 5
                     }
                     return mapping.get(text, 0)
+
                 logs = NotificationLog.query.filter_by(invoice_number=inv.invoice_number).all()
                 max_stage = 0
+                last_notification = None
                 for lg in logs:
                     st = stage_from_log_text(lg.stage)
                     if st > max_stage:
                         max_stage = st
+                    if not last_notification or lg.sent_at > last_notification:
+                        last_notification = lg.sent_at
+
                 progress_val = int((max_stage / 5) * 100)
                 email_val = inv.client_email if inv.client_email else "Brak"
+
+                # Get payment information
+                payment_info = {
+                    'paid_date': inv.paid_date.strftime('%Y-%m-%d') if inv.paid_date else None,
+                    'paid_amount': inv.paid_price / 100.0 if inv.paid_price else 0.0,
+                    'total_amount': inv.gross_price / 100.0 if inv.gross_price else 0.0,
+                    'payment_method': inv.payment_method or "N/A"
+                }
 
                 cases_list.append({
                     'case_number': case_obj.case_number,
@@ -199,7 +218,11 @@ def create_app():
                     'total_debt': (left / 100.0) if left else 0.0,
                     'days_diff': day_diff,
                     'progress_percent': progress_val,
-                    'status': case_obj.status
+                    'status': case_obj.status,
+                    'last_notification': last_notification,
+                    'payment_info': payment_info,
+                    'invoice_date': inv.invoice_date.strftime('%Y-%m-%d') if inv.invoice_date else None,
+                    'payment_due_date': inv.payment_due_date.strftime('%Y-%m-%d') if inv.payment_due_date else None
                 })
 
         if search_query:
@@ -231,11 +254,16 @@ def create_app():
 
         completed_count = len(cases_list)
         stage_counts = {i: 0 for i in range(1, 6)}
-        # Ewentualnie logika zliczania na jakim etapie sprawa zakończona
+        for case in cases_list:
+            stage = int(case['progress_percent'] / 20) + 1
+            if 1 <= stage <= 5:
+                stage_counts[stage] += 1
 
         return render_template('completed.html',
                                cases=cases_list,
                                search_query=search_query,
+                               sort_by=sort_by,
+                               sort_order=sort_order,
                                completed_count=completed_count,
                                stage_counts=stage_counts)
 
@@ -319,7 +347,7 @@ def create_app():
                 'case_number': case_obj.case_number,
                 'client_id': case_obj.client_id,
                 'client_company_name': case_obj.client_company_name,
-                'client_nip': case_obj.client_nip,
+                'client_nip': inv.client_nip,
                 'client_email': inv.client_email if inv.client_email else "Brak",
                 'total_debt': total_debt,
                 'days_diff': days_diff,
@@ -341,20 +369,26 @@ def create_app():
         client_details = {}
         if active_cases_list:
             first = active_cases_list[0]
-            client_details = {
-                'client_company_name': first['client_company_name'],
-                'client_nip': first['client_nip'],
-                'client_email': first['client_email'],
-                'client_address': ''  # można dodać, jeśli Invoice trzyma adres
-            }
+            # Get the invoice for this case to get the latest client details
+            first_case = Case.query.filter_by(case_number=first['case_number']).first()
+            if first_case and first_case.invoice:
+                client_details = {
+                    'client_company_name': first_case.invoice.client_company_name,
+                    'client_nip': first_case.invoice.client_nip,
+                    'client_email': first_case.invoice.client_email,
+                    'client_address': first_case.invoice.client_address
+                }
         elif completed_cases_list:
             first = completed_cases_list[0]
-            client_details = {
-                'client_company_name': first['client_company_name'],
-                'client_nip': first['client_nip'],
-                'client_email': first['client_email'],
-                'client_address': ''
-            }
+            # Get the invoice for this case to get the latest client details
+            first_case = Case.query.filter_by(case_number=first['case_number']).first()
+            if first_case and first_case.invoice:
+                client_details = {
+                    'client_company_name': first_case.invoice.client_company_name,
+                    'client_nip': first_case.invoice.client_nip,
+                    'client_email': first_case.invoice.client_email,
+                    'client_address': first_case.invoice.client_address
+                }
 
         return render_template('client_cases.html',
                                active_cases=active_cases_list,
@@ -368,20 +402,47 @@ def create_app():
     # Oznaczenie faktury jako opłaconej
     @app.route('/mark_paid/<int:invoice_id>')
     def mark_invoice_paid(invoice_id):
-        inv = Invoice.query.get_or_404(invoice_id)
-        inv.status = "opłacona"
-        inv.paid_date = datetime.utcnow().date()
-        inv.left_to_pay = 0
-        db.session.add(inv)
+        """
+        Oznaczenie faktury jako opłaconej i zamknięcie sprawy
+        """
+        try:
+            invoice = Invoice.query.get_or_404(invoice_id)
+            
+            case = Case.query.get(invoice.case_id)
+            if not case:
+                flash(f"Nie znaleziono sprawy dla faktury {invoice.invoice_number}", "danger")
+                return redirect(url_for('active_cases'))
+                
+            invoice.status = "paid"  #invoice.status = "opłacona"
+            invoice.paid_price = invoice.gross_price
+            invoice.left_to_pay = 0
+            invoice.paid_date = date.today()
+            db.session.add(invoice)
 
-        case_obj = Case.query.get(inv.case_id)
-        if case_obj:
-            case_obj.status = "closed_oplacone"
-            db.session.add(case_obj)
-
-        db.session.commit()
-        flash("Faktura została oznaczona jako opłacona, a sprawa zamknięta.", "success")
-        return redirect(url_for('case_detail', case_number=inv.invoice_number))
+            case.status = "closed_oplacone"
+            db.session.add(case)
+            
+            # Add a log entry for payment
+            log_entry = NotificationLog(
+                client_id=invoice.client_id,
+                invoice_number=invoice.invoice_number,
+                email_to=invoice.client_email if invoice.client_email else "N/A",
+                subject="Faktura oznaczona jako opłacona",
+                body=f"Faktura {invoice.invoice_number} została oznaczona jako opłacona dnia {date.today().strftime('%Y-%m-%d')}.",
+                stage="Zamknięcie sprawy",
+                mode="System"
+            )
+            db.session.add(log_entry)
+            
+            db.session.commit()
+            flash(f"Faktura {invoice.invoice_number} została oznaczona jako opłacona, a sprawa została zamknięta.", "success")
+            
+        except Exception as e:
+            logging.error(f"Error marking invoice as paid: {e}")
+            flash(f"Błąd podczas oznaczania faktury jako opłaconej: {str(e)}", "danger")
+            db.session.rollback()
+            
+        return redirect(url_for('active_cases'))
 
     # Ręczne wysyłanie powiadomienia ("/send_manual/<case_number>/<stage>")
     @app.route('/send_manual/<path:case_number>/<stage>')
@@ -393,19 +454,49 @@ def create_app():
                 flash("Faktura nie znaleziona.", "danger")
                 return redirect(url_for('active_cases'))
 
+            # Check if client email is available
+            if not inv.client_email or inv.client_email == "N/A":
+                flash("Brak adresu email klienta. Nie można wysłać powiadomienia.", "danger")
+                return redirect(url_for('case_detail', case_number=case_number))
+
             mapped = map_stage(stage)
             subject, body_html = generate_email(mapped, inv)
             if not subject or not body_html:
                 flash("Błąd w generowaniu szablonu wiadomości.", "danger")
                 return redirect(url_for('case_detail', case_number=case_number))
 
+            # Check if this notification was already sent
+            existing_log = NotificationLog.query.filter_by(
+                invoice_number=inv.invoice_number,
+                stage=mapped
+            ).first()
+            
+            if existing_log:
+                flash(f"To powiadomienie zostało już wysłane {existing_log.sent_at.strftime('%Y-%m-%d %H:%M')}.", "warning")
+                return redirect(url_for('case_detail', case_number=case_number))
+
+            # Split multiple emails and send to each
+            email_success = False
+            email_errors = []
             emails = [email.strip() for email in inv.client_email.split(',') if email.strip()]
             for email in emails:
-                send_email(email, subject, body_html, html=True)
+                try:
+                    send_email(email, subject, body_html, html=True)
+                    email_success = True
+                except Exception as e:
+                    email_errors.append(f"{email}: {str(e)}")
+                    logging.error(f"Error sending to {email}: {e}")
 
+            if not email_success:
+                error_msg = "; ".join(email_errors)
+                flash(f"Błąd przy wysyłaniu wiadomości: {error_msg}", "danger")
+                return redirect(url_for('case_detail', case_number=case_number))
+
+            # Update the invoice debt status
             inv.debt_status = mapped
             db.session.add(inv)
 
+            # Add log entry
             new_log = NotificationLog(
                 client_id=inv.client_id,
                 invoice_number=inv.invoice_number,
@@ -413,7 +504,8 @@ def create_app():
                 subject=subject,
                 body=body_html,
                 stage=mapped,
-                mode="Manualne"
+                mode="Manualne",
+                sent_at=datetime.utcnow()
             )
             db.session.add(new_log)
             db.session.commit()
@@ -439,25 +531,25 @@ def create_app():
                 case_obj.status = "closed_oplacone"
                 db.session.add(case_obj)
                 db.session.commit()
+                flash("Sprawa została zamknięta po wysłaniu ostatniego etapu powiadomień.", "info")
 
             flash("Powiadomienie zostało wysłane.", "success")
         except Exception as e:
             logging.error(f"Error in manual email sending: {e}")
-            flash("Wystąpił błąd przy wysyłaniu powiadomienia. Sprawdź logi.", "danger")
+            flash(f"Wystąpił błąd przy wysyłaniu powiadomienia: {str(e)}", "danger")
 
-        return redirect(url_for('case_detail', case_number=inv.invoice_number if inv else case_number))
+        return redirect(url_for('case_detail', case_number=case_number))
 
     # Funkcja pomocnicza do uruchamiania synchronizacji w tle
     def background_sync(app):
         with app.app_context():
             try:
                 start_time = datetime.utcnow()
-                new_processed = sync_new_invoices()
-                updated_processed = update_existing_cases()
-                total = new_processed + updated_processed
+                # Use run_full_sync which doesn't depend on circular imports
+                processed = run_full_sync()
                 duration = (datetime.utcnow() - start_time).total_seconds()
                 # Zapis informacji w SyncStatus
-                record = SyncStatus(sync_type="full", processed=total, duration=duration)
+                record = SyncStatus(sync_type="full", processed=processed, duration=duration)
                 db.session.add(record)
                 db.session.commit()
             except Exception as e:
@@ -481,20 +573,34 @@ def create_app():
     # Ustawienia wysyłki ("/shipping_settings")
     @app.route('/shipping_settings', methods=['GET', 'POST'], endpoint='shipping_settings_view')
     def shipping_settings_view():
-        from .shipping_settings import NOTIFICATION_OFFSETS
-        current_settings = dict(NOTIFICATION_OFFSETS)
+        from .models import NotificationSettings
+        
+        # Initialize default settings if none exist
+        NotificationSettings.initialize_default_settings()
+        
+        current_settings = NotificationSettings.get_all_settings()
+        
         if request.method == 'POST':
-            for key in current_settings.keys():
-                try:
-                    new_value = int(request.form.get(key, current_settings[key]))
-                    current_settings[key] = new_value
-                except ValueError:
-                    pass
             try:
+                # Update settings in database
+                new_settings = {}
+                for key in current_settings.keys():
+                    try:
+                        new_value = int(request.form.get(key, current_settings[key]))
+                        new_settings[key] = new_value
+                    except ValueError:
+                        flash(f"Nieprawidłowa wartość dla {key}. Używam poprzedniej wartości.", "warning")
+                        new_settings[key] = current_settings[key]
+                
+                NotificationSettings.update_settings(new_settings)
                 flash("Ustawienia zostały zaktualizowane i zapisane.", "success")
+                
             except Exception as e:
                 flash(f"Nie udało się zapisać ustawień: {e}", "danger")
+                db.session.rollback()
+            
             return redirect(url_for('shipping_settings_view'))
+            
         return render_template('shipping_settings.html', settings=current_settings)
 
     # Logowanie

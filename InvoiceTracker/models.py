@@ -89,3 +89,51 @@ class SyncStatus(db.Model):
 
     def __repr__(self):
         return f'<SyncStatus {self.sync_type}: {self.processed} faktur, {self.duration:.2f}s>'
+    
+    
+class NotificationSettings(db.Model):
+    """
+    Model NotificationSettings – przechowuje ustawienia powiadomień w bazie danych.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    stage_name = db.Column(db.String(255), unique=True, nullable=False)
+    offset_days = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<NotificationSettings {self.stage_name}: {self.offset_days} days>'
+
+    @classmethod
+    def get_all_settings(cls):
+        """Returns all settings as a dictionary"""
+        settings = cls.query.all()
+        return {setting.stage_name: setting.offset_days for setting in settings}
+
+    @classmethod
+    def update_settings(cls, settings_dict):
+        """Updates all settings from a dictionary"""
+        for stage_name, offset_days in settings_dict.items():
+            setting = cls.query.filter_by(stage_name=stage_name).first()
+            if setting:
+                setting.offset_days = offset_days
+            else:
+                new_setting = cls(stage_name=stage_name, offset_days=offset_days)
+                db.session.add(new_setting)
+        db.session.commit()
+
+    @classmethod
+    def initialize_default_settings(cls):
+        """Initializes default settings if none exist"""
+        if not cls.query.first():
+            default_settings = {
+                "Przypomnienie o zbliżającym się terminie płatności": -1,
+                "Powiadomienie o upływie terminu płatności": 7,
+                "Wezwanie do zapłaty": 14,
+                "Powiadomienie o zamiarze skierowania sprawy do windykatora zewnętrznego i publikacji na giełdzie wierzytelności": 21,
+                "Przekazanie sprawy do windykatora zewnętrznego": 30,
+            }
+            for stage_name, offset_days in default_settings.items():
+                new_setting = cls(stage_name=stage_name, offset_days=offset_days)
+                db.session.add(new_setting)
+            db.session.commit()

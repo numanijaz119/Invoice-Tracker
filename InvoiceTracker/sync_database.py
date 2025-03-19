@@ -75,6 +75,7 @@ def sync_database():
     Przykładowa funkcja do synchronizacji bazy – pobiera tylko faktury o statusie 'sent' i 'printed'
     (pomijamy 'paid'), następnie zapisuje/aktualizuje je w bazie.
     """
+    print("[sync_database] Sync Data Base...")
     client = InFaktAPIClient()
 
     # Pobieramy wszystkie faktury (paginacja w razie potrzeby)

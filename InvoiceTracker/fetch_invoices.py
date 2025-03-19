@@ -2,18 +2,36 @@
 import sys
 import asyncio
 import csv
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import aiohttp
+import os
+from flask import Flask
 
-from .app import create_app
-from .models import db, Invoice, NotificationLog, Case
+from .models import db, Invoice, NotificationLog, Case, NotificationSettings
 from .send_email import send_email
-from .shipping_settings import NOTIFICATION_OFFSETS
 from .sync_database import sync_database
 from .src.api.api_client import InFaktAPIClient
 from dotenv import load_dotenv
 
 load_dotenv()
+
+def create_test_app():
+    """Creates a simple Flask app just for database operations"""
+    app = Flask(__name__)
+    
+    # Konfiguracja bazy Postgres
+    db_user = os.getenv('DB_USER')
+    db_password = os.getenv('DB_PASSWORD')
+    db_name = os.getenv('DB_NAME')
+    db_host = os.getenv('DB_HOST', 'localhost')
+    db_port = os.getenv('DB_PORT', '5432')
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = (
+        f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    )
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
+    return app
 
 def export_invoices_to_csv(invoices, filename='invoices_with_due_dates.csv'):
     """
@@ -77,30 +95,95 @@ async def fetch_all_details(client, invoices):
 
 def update_invoices_in_db():
     """
-    Funkcja, która asynchronicznie pobiera tylko faktury o statusie 'sent' lub 'printed',
-    następnie uzupełnia je o dane szczegółowe (termin płatności, kwoty),
-    a na końcu zapisuje do bazy. Pomijamy faktury 'paid'.
+    Optymalizacja pobierania danych z API:
+    1. Pobieramy tylko faktury o statusie 'sent' lub 'printed'
+    2. Selektywnie aktualizujemy tylko faktury, które będą przetwarzane w najbliższym czasie
+    3. Optymalizujemy aby szanować limity API InFakt i usprawnić działanie przy dużej liczbie spraw
     """
     client = InFaktAPIClient()
-
-    # Pobieramy wszystkie faktury (np. do 1000 sztuk), ale weryfikujemy status
-    invoices_list = []
-    offset = 0
-    limit = 100
-    while True:
-        data_batch = client.list_invoices(offset=offset, limit=limit, fields=["id", "uuid", "number", "invoice_date", "gross_price", "status", "client_id"], order="invoice_date desc")
-        if not data_batch:
-            break
-        # Zatrzymujemy się, jeśli 0 rekordów
-        if len(data_batch) == 0:
-            break
-        # Bierzemy tylko status 'sent' i 'printed'
-        data_filtered = [inv for inv in data_batch if inv.get('status') in ('sent', 'printed')]
-        invoices_list.extend(data_filtered)
-        offset += limit
+    app = create_test_app()
+    
+    with app.app_context():
+        # Najpierw ustalamy, które faktury należy zaktualizować
+        today = date.today()
+        tomorrow = today + timedelta(days=1)
+        
+        # Get notification settings from database
+        notification_settings = NotificationSettings.get_all_settings()
+        
+        # Przygotuj listę dni różnicy, dla których powiadomienia będą wysyłane jutro
+        notification_days = list(notification_settings.values())
+        
+        # Pobierz aktywne faktury, dla których jutro przypada powiadomienie
+        target_invoices = []
+        for offset_value in notification_days:
+            target_date = tomorrow - timedelta(days=offset_value)
+            invoices = (Invoice.query
+                        .join(Case, Invoice.case_id == Case.id)
+                        .filter(Case.status == "active")
+                        .filter(Invoice.payment_due_date == target_date)
+                        .all())
+            target_invoices.extend(invoices)
+        
+        # Dodatkowo pobieramy świeże faktury (z ostatnich 30 dni)
+        fresh_date = today - timedelta(days=30)
+        fresh_invoices = (Invoice.query
+                          .join(Case, Invoice.case_id == Case.id)
+                          .filter(Case.status == "active")
+                          .filter(Invoice.invoice_date >= fresh_date)
+                          .all())
+        
+        # Połącz listy i unikalne faktury po ID
+        update_ids = set()
+        combined_invoices = []
+        
+        for inv in target_invoices + fresh_invoices:
+            if inv.id not in update_ids:
+                update_ids.add(inv.id)
+                combined_invoices.append(inv)
+        
+        print(f"[fetch_invoices] Zakwalifikowano {len(combined_invoices)} faktur do aktualizacji")
+        
+        if not combined_invoices:
+            print("[fetch_invoices] Brak faktur do aktualizacji.")
+            return
+        
+        # Pobieramy listę faktur z API (paginacja po 100 rekordów)
+        invoices_list = []
+        offset = 0
+        limit = 100
+        
+        while True:
+            try:
+                data_batch = client.list_invoices(
+                    offset=offset, 
+                    limit=limit, 
+                    fields=["id", "uuid", "number", "invoice_date", "gross_price", "status", "client_id"], 
+                    order="invoice_date desc"
+                )
+                
+                if not data_batch or len(data_batch) == 0:
+                    break
+                
+                # Filtrujemy tylko te faktury, które chcemy aktualizować + status sent/printed
+                data_filtered = [
+                    inv for inv in data_batch 
+                    if inv.get('id') in update_ids or inv.get('status') in ('sent', 'printed')
+                ]
+                
+                invoices_list.extend(data_filtered)
+                offset += limit
+                
+                # Zatrzymujemy się, gdy pobraliśmy już wszystkie potrzebne faktury
+                if len(invoices_list) >= len(update_ids) and offset > 1000:
+                    break
+                
+            except Exception as e:
+                print(f"[fetch_invoices] Błąd podczas pobierania listy faktur: {e}")
+                break
 
     if not invoices_list:
-        print("[fetch_invoices] Nie znaleziono faktur z statusami 'sent' lub 'printed'.")
+        print("[fetch_invoices] Nie znaleziono faktur do aktualizacji.")
         return
 
     # Pobieramy szczegóły asynchronicznie
@@ -126,34 +209,38 @@ def update_invoices_in_db():
         address_str = ''
         email_str = 'N/A'
         if client_id:
-            cdata = client.get_client_details(client_id)
-            if cdata:
-                email_str = cdata.get('email', 'N/A')
-                street = cdata.get('street', '')
-                street_no = cdata.get('street_number', '')
-                flat_no = cdata.get('flat_number', '')
-                city = cdata.get('city', '')
-                post_code = cdata.get('postal_code', '')
-                parts = []
-                if post_code:
-                    parts.append(post_code)
-                if street:
-                    s = street
-                    if street_no:
-                        s += f" {street_no}"
-                    if flat_no:
-                        s += f"/{flat_no}"
-                    parts.append(s)
-                if city:
-                    parts.append(city)
-                address_str = ", ".join(parts)
+            try:
+                cdata = client.get_client_details(client_id)
+                if cdata:
+                    email_str = cdata.get('email', 'N/A')
+                    street = cdata.get('street', '')
+                    street_no = cdata.get('street_number', '')
+                    flat_no = cdata.get('flat_number', '')
+                    city = cdata.get('city', '')
+                    post_code = cdata.get('postal_code', '')
+                    parts = []
+                    if post_code:
+                        parts.append(post_code)
+                    if street:
+                        s = street
+                        if street_no:
+                            s += f" {street_no}"
+                        if flat_no:
+                            s += f"/{flat_no}"
+                        parts.append(s)
+                    if city:
+                        parts.append(city)
+                    address_str = ", ".join(parts)
+            except Exception as e:
+                print(f"[fetch_invoices] Błąd podczas pobierania danych klienta {client_id}: {e}")
+                
         inv['client_address'] = address_str
         inv['client_email'] = email_str
         updated_invoices.append(inv)
 
     # Zapis do bazy
-    app = create_app()
-    with app.app_context():
+    with create_test_app().app_context():
+        updated_count = 0
         for inv in updated_invoices:
             local_inv = Invoice.query.filter_by(id=inv['id']).first()
             if not local_inv:
@@ -190,10 +277,19 @@ def update_invoices_in_db():
             local_inv.left_to_pay = inv.get('left_to_pay', 0)
 
             db.session.add(local_inv)
+            updated_count += 1
+            
+            # Mark as paid if needed
+            if local_inv.left_to_pay == 0 and local_inv.gross_price > 0:
+                case = Case.query.filter_by(case_number=local_inv.invoice_number).first()
+                if case and case.status == "active":
+                    case.status = "closed_oplacone"
+                    db.session.add(case)
+        
         db.session.commit()
 
-    export_invoices_to_csv(updated_invoices, 'invoices_with_due_dates.csv')
-    print("[fetch_invoices] Zakończono aktualizację bazy (wykluczono faktury 'paid').")
+    print(f"[fetch_invoices] Zakończono aktualizację {updated_count} faktur w bazie.")
+    return updated_count
 
 def main():
     update_invoices_in_db()

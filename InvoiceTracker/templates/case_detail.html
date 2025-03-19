@@ -6,7 +6,7 @@
 <h4>Dane Klienta</h4>
 <p>
   <strong>ID Klienta:</strong> {{ case.client_id }}<br>
-  <strong>NIP:</strong> {{ case.client_nip }}<br>
+  <strong>NIP:</strong> {{ invoice.client_nip }}<br>
   <strong>Nazwa firmy:</strong> {{ case.client_company_name }}<br>
   <strong>Email:</strong> {{ invoice.client_email if invoice.client_email else "Brak" }}<br>
   <strong>Adres:</strong>
