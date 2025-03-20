@@ -617,6 +617,31 @@ def create_app():
                 flash("Nieprawidłowe dane logowania.", "danger")
         return render_template('login.html')
 
+    # Przywrócenie zamkniętej sprawy do aktywnych
+    @app.route('/reopen_case/<case_number>')
+    def reopen_case(case_number):
+        """
+        Przywraca zamkniętą sprawę do aktywnych.
+        """
+        # Sprawdzenie, czy użytkownik jest zalogowany
+        if not session.get('logged_in'):
+            flash("Musisz być zalogowany, aby wykonać tę operację.", "danger")
+            return redirect(url_for('login'))
+            
+        case = Case.query.filter_by(case_number=case_number).first_or_404()
+        
+        # Przywrócenie sprawy tylko jeśli nie jest aktywna
+        if case.status != "active":
+            old_status = case.status
+            case.status = "active"
+            db.session.add(case)
+            db.session.commit()
+            flash(f'Sprawa {case_number} została przywrócona do spraw aktywnych (poprzedni status: {old_status}).', 'success')
+        else:
+            flash(f'Sprawa {case_number} jest już aktywna.', 'warning')
+        
+        return redirect(url_for('case_detail', case_number=case_number))
+
     # Wylogowanie
     @app.route('/logout')
     def logout():
