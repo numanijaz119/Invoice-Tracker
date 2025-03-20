@@ -7,18 +7,19 @@
            placeholder="Szukaj (ID klienta, NIP, nazwa, email, nr sprawy)" value="{{ search_query }}">
   </div>
   <div class="col-md-3">
-    <select name="sort_by" class="form-select">
+    <select name="sort_by" class="form-select" title="Wybierz pole, według którego chcesz sortować dane">
       <option value="case_number" {% if sort_by=='case_number' %}selected{% endif %}>Numer Sprawy</option>
       <option value="client_id" {% if sort_by=='client_id' %}selected{% endif %}>ID Klienta</option>
       <option value="client_company_name" {% if sort_by=='client_company_name' %}selected{% endif %}>Nazwa</option>
       <option value="client_nip" {% if sort_by=='client_nip' %}selected{% endif %}>NIP</option>
       <option value="client_email" {% if sort_by=='client_email' %}selected{% endif %}>Email</option>
       <option value="total_debt" {% if sort_by=='total_debt' %}selected{% endif %}>Kwota Zadłużenia</option>
-      <option value="days_diff" {% if sort_by=='days_diff' %}selected{% endif %}>Dni od / do terminu</option>
+      <option value="days_diff" {% if sort_by=='days_diff' %}selected{% endif %}>Dni po terminie</option>
+      <option value="progress_percent" {% if sort_by=='progress_percent' %}selected{% endif %}>Postęp windykacji</option>
     </select>
   </div>
   <div class="col-md-2">
-    <select name="sort_order" class="form-select">
+    <select name="sort_order" class="form-select" title="Wybierz kierunek sortowania">
       <option value="asc" {% if sort_order=='asc' %}selected{% endif %}>Rosnąco</option>
       <option value="desc" {% if sort_order=='desc' %}selected{% endif %}>Malejąco</option>
     </select>
@@ -40,14 +41,70 @@
 <table class="table table-bordered table-striped">
   <thead class="table-dark">
     <tr>
-      <th>Numer Sprawy</th>
-      <th>ID Klienta</th>
-      <th>Nazwa</th>
-      <th>NIP</th>
-      <th>Email</th>
-      <th>Kwota Zadłużenia (zł)</th>
-      <th>Dni od / do terminu</th>
-      <th>Postęp</th>
+      <th {% if sort_by == 'case_number' %}class="{% if sort_order == 'asc' %}sorted-asc{% else %}sorted-desc{% endif %}"{% endif %}>
+        <a href="{{ url_for('completed_cases', sort_by='case_number', sort_order='asc' if sort_by != 'case_number' or sort_order == 'desc' else 'desc', search=search_query) }}" class="text-white text-decoration-none">
+          Numer Sprawy
+          {% if sort_by == 'case_number' %}
+            <span class="ms-1">{% if sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+          {% endif %}
+        </a>
+      </th>
+      <th {% if sort_by == 'client_id' %}class="{% if sort_order == 'asc' %}sorted-asc{% else %}sorted-desc{% endif %}"{% endif %}>
+        <a href="{{ url_for('completed_cases', sort_by='client_id', sort_order='asc' if sort_by != 'client_id' or sort_order == 'desc' else 'desc', search=search_query) }}" class="text-white text-decoration-none">
+          ID Klienta
+          {% if sort_by == 'client_id' %}
+            <span class="ms-1">{% if sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+          {% endif %}
+        </a>
+      </th>
+      <th {% if sort_by == 'client_company_name' %}class="{% if sort_order == 'asc' %}sorted-asc{% else %}sorted-desc{% endif %}"{% endif %}>
+        <a href="{{ url_for('completed_cases', sort_by='client_company_name', sort_order='asc' if sort_by != 'client_company_name' or sort_order == 'desc' else 'desc', search=search_query) }}" class="text-white text-decoration-none">
+          Nazwa
+          {% if sort_by == 'client_company_name' %}
+            <span class="ms-1">{% if sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+          {% endif %}
+        </a>
+      </th>
+      <th {% if sort_by == 'client_nip' %}class="{% if sort_order == 'asc' %}sorted-asc{% else %}sorted-desc{% endif %}"{% endif %}>
+        <a href="{{ url_for('completed_cases', sort_by='client_nip', sort_order='asc' if sort_by != 'client_nip' or sort_order == 'desc' else 'desc', search=search_query) }}" class="text-white text-decoration-none">
+          NIP
+          {% if sort_by == 'client_nip' %}
+            <span class="ms-1">{% if sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+          {% endif %}
+        </a>
+      </th>
+      <th {% if sort_by == 'client_email' %}class="{% if sort_order == 'asc' %}sorted-asc{% else %}sorted-desc{% endif %}"{% endif %}>
+        <a href="{{ url_for('completed_cases', sort_by='client_email', sort_order='asc' if sort_by != 'client_email' or sort_order == 'desc' else 'desc', search=search_query) }}" class="text-white text-decoration-none">
+          Email
+          {% if sort_by == 'client_email' %}
+            <span class="ms-1">{% if sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+          {% endif %}
+        </a>
+      </th>
+      <th {% if sort_by == 'total_debt' %}class="{% if sort_order == 'asc' %}sorted-asc{% else %}sorted-desc{% endif %}"{% endif %}>
+        <a href="{{ url_for('completed_cases', sort_by='total_debt', sort_order='asc' if sort_by != 'total_debt' or sort_order == 'desc' else 'desc', search=search_query) }}" class="text-white text-decoration-none">
+          Kwota Zadłużenia (zł)
+          {% if sort_by == 'total_debt' %}
+            <span class="ms-1">{% if sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+          {% endif %}
+        </a>
+      </th>
+      <th {% if sort_by == 'days_diff' %}class="{% if sort_order == 'asc' %}sorted-asc{% else %}sorted-desc{% endif %}"{% endif %}>
+        <a href="{{ url_for('completed_cases', sort_by='days_diff', sort_order='asc' if sort_by != 'days_diff' or sort_order == 'desc' else 'desc', search=search_query) }}" class="text-white text-decoration-none">
+          Dni po terminie
+          {% if sort_by == 'days_diff' %}
+            <span class="ms-1">{% if sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+          {% endif %}
+        </a>
+      </th>
+      <th {% if sort_by == 'progress_percent' %}class="{% if sort_order == 'asc' %}sorted-asc{% else %}sorted-desc{% endif %}"{% endif %}>
+        <a href="{{ url_for('completed_cases', sort_by='progress_percent', sort_order='asc' if sort_by != 'progress_percent' or sort_order == 'desc' else 'desc', search=search_query) }}" class="text-white text-decoration-none">
+          Postęp
+          {% if sort_by == 'progress_percent' %}
+            <span class="ms-1">{% if sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+          {% endif %}
+        </a>
+      </th>
       <th>Szczegóły</th>
     </tr>
   </thead>
@@ -104,5 +161,71 @@
   </tbody>
 </table>
 
-<a href="{{ url_for('active_cases') }}" class="btn btn-primary">Powrót do aktywnych spraw</a>
+{% if total_pages > 1 %}
+<div class="pagination-info mt-3 mb-2">
+  <p>Wyświetlanie {{ (page-1) * per_page + 1 }} - {{ page * per_page if page * per_page < total_count else total_count }} z {{ total_count }} spraw</p>
+</div>
+
+<nav aria-label="Paginacja">
+  <ul class="pagination justify-content-center">
+    {% if page > 1 %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('completed_cases', page=1, search=search_query, sort_by=sort_by, sort_order=sort_order) }}">
+          <span aria-hidden="true">&laquo;&laquo;</span>
+          <span class="sr-only">Pierwsza</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('completed_cases', page=page-1, search=search_query, sort_by=sort_by, sort_order=sort_order) }}">
+          <span aria-hidden="true">&laquo;</span>
+          <span class="sr-only">Poprzednia</span>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">&laquo;&laquo;</span>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link">&laquo;</span>
+      </li>
+    {% endif %}
+    
+    {% set start_page = [page - 2, 1]|max %}
+    {% set end_page = [start_page + 4, total_pages]|min %}
+    {% if end_page - start_page < 4 %}
+      {% set start_page = [end_page - 4, 1]|max %}
+    {% endif %}
+    
+    {% for p in range(start_page, end_page + 1) %}
+      <li class="page-item {% if p == page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('completed_cases', page=p, search=search_query, sort_by=sort_by, sort_order=sort_order) }}">{{ p }}</a>
+      </li>
+    {% endfor %}
+    
+    {% if page < total_pages %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('completed_cases', page=page+1, search=search_query, sort_by=sort_by, sort_order=sort_order) }}">
+          <span aria-hidden="true">&raquo;</span>
+          <span class="sr-only">Następna</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('completed_cases', page=total_pages, search=search_query, sort_by=sort_by, sort_order=sort_order) }}">
+          <span aria-hidden="true">&raquo;&raquo;</span>
+          <span class="sr-only">Ostatnia</span>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">&raquo;</span>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link">&raquo;&raquo;</span>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+<a href="{{ url_for('active_cases') }}" class="btn btn-primary mt-3">Powrót do aktywnych spraw</a>
 {% endblock %}

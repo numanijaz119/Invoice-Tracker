@@ -73,6 +73,9 @@ def create_app():
     # Initialize Flask-Migrate
     migrate = Migrate(app, db)
 
+    # Add min function to Jinja2 environment
+    app.jinja_env.globals.update(min=min)
+
     # Tworzenie tabel bazy przy pierwszym uruchomieniu
     @app.before_first_request
     def create_tables():
@@ -91,6 +94,8 @@ def create_app():
         search_query = request.args.get('search', '').strip().lower()
         sort_by = request.args.get('sort_by', 'case_number')
         sort_order = request.args.get('sort_order', 'asc')
+        page = request.args.get('page', 1, type=int)
+        per_page = 100 
 
         cases_query = Case.query.filter_by(status="active").all()
         cases_list = []
@@ -134,10 +139,28 @@ def create_app():
                     'status': case_obj.status
                 })
 
+        # Filtrowanie po wyszukiwaniu
+        if search_query:
+            cases_list = [
+                c for c in cases_list
+                if search_query in (c.get('client_id') or '').lower()
+                or search_query in (c.get('client_nip') or '').lower()
+                or search_query in (c.get('client_company_name') or '').lower()
+                or search_query in (c.get('case_number') or '').lower()
+                or search_query in (c.get('client_email') or '').lower()
+            ]
+
         # Sortowanie
         if cases_list and sort_by in cases_list[0]:
             try:
-                if isinstance(cases_list[0][sort_by], (int, float)):
+                if sort_by == 'days_diff':
+                    # Special handling for days_diff to handle None values
+                    cases_list = sorted(
+                        cases_list,
+                        key=lambda x: x.get(sort_by, 0) if x.get(sort_by) is not None else -float('inf'),
+                        reverse=(sort_order == "desc")
+                    )
+                elif isinstance(cases_list[0][sort_by], (int, float)):
                     cases_list = sorted(
                         cases_list,
                         key=lambda x: x.get(sort_by, 0),
@@ -152,16 +175,27 @@ def create_app():
             except Exception as e:
                 print("Sortowanie error:", e)
 
+        # Paginacja
+        total_count = len(cases_list)
+        total_pages = (total_count + per_page - 1) // per_page
+        start_idx = (page - 1) * per_page
+        end_idx = min(start_idx + per_page, total_count)
+        paginated_cases = cases_list[start_idx:end_idx]
+
         total_debt_all = sum(c['total_debt'] for c in cases_list)
-        active_count = len(cases_list)
+        active_count = total_count
 
         return render_template('cases.html',
-                               cases=cases_list,
+                               cases=paginated_cases,
                                search_query=search_query,
                                sort_by=sort_by,
                                sort_order=sort_order,
                                total_debt_all=total_debt_all,
-                               active_count=active_count)
+                               active_count=active_count,
+                               page=page,
+                               per_page=per_page,
+                               total_pages=total_pages,
+                               total_count=total_count)
 
     # Widok spraw zakończonych ("/completed")
     @app.route('/completed')
@@ -169,6 +203,8 @@ def create_app():
         search_query = request.args.get('search', '').strip().lower()
         sort_by = request.args.get('sort_by', 'case_number')
         sort_order = request.args.get('sort_order', 'asc')
+        page = request.args.get('page', 1, type=int)
+        per_page = 100
 
         cases_query = Case.query.filter(Case.status != "active").all()
         cases_list = []
@@ -237,7 +273,14 @@ def create_app():
 
         if cases_list and 'case_number' in cases_list[0]:
             try:
-                if isinstance(cases_list[0].get(sort_by), (int, float)):
+                if sort_by == 'days_diff':
+                    # Special handling for days_diff to handle None values
+                    cases_list = sorted(
+                        cases_list,
+                        key=lambda x: x.get(sort_by, 0) if x.get(sort_by) is not None else -float('inf'),
+                        reverse=(sort_order == "desc")
+                    )
+                elif isinstance(cases_list[0].get(sort_by), (int, float)):
                     cases_list = sorted(
                         cases_list,
                         key=lambda x: x.get(sort_by, 0),
@@ -259,13 +302,24 @@ def create_app():
             if 1 <= stage <= 5:
                 stage_counts[stage] += 1
 
+        # Paginacja
+        total_count = len(cases_list)
+        total_pages = (total_count + per_page - 1) // per_page
+        start_idx = (page - 1) * per_page
+        end_idx = min(start_idx + per_page, total_count)
+        paginated_cases = cases_list[start_idx:end_idx]
+
         return render_template('completed.html',
-                               cases=cases_list,
+                               cases=paginated_cases,
                                search_query=search_query,
                                sort_by=sort_by,
                                sort_order=sort_order,
                                completed_count=completed_count,
-                               stage_counts=stage_counts)
+                               stage_counts=stage_counts,
+                               page=page,
+                               per_page=per_page,
+                               total_pages=total_pages,
+                               total_count=total_count)
 
     # Widok szczegółów sprawy ("/case/<case_number>")
     @app.route('/case/<path:case_number>')
