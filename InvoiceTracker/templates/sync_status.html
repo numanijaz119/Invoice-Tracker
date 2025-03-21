@@ -7,6 +7,10 @@
       <th>ID</th>
       <th>Typ synchronizacji</th>
       <th>Liczba przetworzonych faktur</th>
+      <th>Nowe sprawy</th>
+      <th>Zaktualizowane sprawy</th>
+      <th>Zamknięte sprawy</th>
+      <th>Wywołania API</th>
       <th>Czas trwania (s)</th>
       <th>Data</th>
     </tr>
@@ -17,6 +21,10 @@
       <td>{{ s.id }}</td>
       <td>{{ s.sync_type }}</td>
       <td>{{ s.processed }}</td>
+      <td>{{ s.new_cases or 0 }}</td>
+      <td>{{ s.updated_cases or 0 }}</td>
+      <td>{{ s.closed_cases or 0 }}</td>
+      <td>{{ s.api_calls or 0 }}</td>
       <td>{{ "%.2f"|format(s.duration) }}</td>
       <td>{{ s.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
     </tr>

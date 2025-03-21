@@ -80,12 +80,20 @@ class SyncStatus(db.Model):
       - processed: liczba przetworzonych faktur
       - timestamp: data wykonania synchronizacji
       - duration: czas trwania operacji (w sekundach)
+      - new_cases: liczba nowych spraw
+      - updated_cases: liczba zaktualizowanych spraw
+      - closed_cases: liczba zamkniętych spraw
+      - api_calls: liczba wywołań API
     """
     id = db.Column(db.Integer, primary_key=True)
     sync_type = db.Column(db.String(50))
     processed = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     duration = db.Column(db.Float)
+    new_cases = db.Column(db.Integer, default=0)
+    updated_cases = db.Column(db.Integer, default=0)
+    closed_cases = db.Column(db.Integer, default=0)
+    api_calls = db.Column(db.Integer, default=0)
 
     def __repr__(self):
         return f'<SyncStatus {self.sync_type}: {self.processed} faktur, {self.duration:.2f}s>'

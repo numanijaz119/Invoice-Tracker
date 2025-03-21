@@ -70,8 +70,6 @@ def create_app():
 
     db.init_app(app)
 
-    # Initialize Flask-Migrate
-    migrate = Migrate(app, db)
 
     # Add min function to Jinja2 environment
     app.jinja_env.globals.update(min=min)
@@ -80,6 +78,7 @@ def create_app():
     @app.before_first_request
     def create_tables():
         db.create_all()
+        NotificationSettings.initialize_default_settings()
 
     # Wymaganie zalogowania (z wyjątkiem login, static)
     @app.before_request

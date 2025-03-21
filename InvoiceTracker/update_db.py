@@ -14,8 +14,10 @@ def sync_new_invoices(start_offset=0, limit=100):
     """
     client = InFaktAPIClient()
     processed_count = 0
+    new_cases_count = 0
+    api_calls = 0
     today = date.today()
-    new_case_due_date = today + timedelta(days=2)
+    new_case_due_date = today + timedelta(days=4)
     new_case_due_date_str = new_case_due_date.strftime("%Y-%m-%d")
     offset = start_offset
     start_time = datetime.utcnow()
@@ -34,6 +36,7 @@ def sync_new_invoices(start_offset=0, limit=100):
         url = f"{client.base_url}/invoices.json"
         try:
             response = client._session.get(url, headers=client.headers, params=params)
+            api_calls += 1
             response.raise_for_status()
         except Exception as e:
             print(f"[sync_new_invoices] Błąd przy pobieraniu partii offset={offset}: {e}")
@@ -95,6 +98,7 @@ def sync_new_invoices(start_offset=0, limit=100):
                 if client_id not in client_details_cache:
                     try:
                         cdata = client.get_client_details(client_id)
+                        api_calls += 1
                         if cdata:
                             client_details_cache[client_id] = cdata
                             print(f"[sync_new_invoices] Got client details for client_id {client_id}")
@@ -156,16 +160,29 @@ def sync_new_invoices(start_offset=0, limit=100):
                 db.session.add(new_inv)
                 db.session.commit()
 
+                new_cases_count += 1
+                db.session.add(new_case)
+                db.session.commit()
+                new_inv.case_id = new_case.id
+                db.session.add(new_inv)
+                db.session.commit()
+
             processed_count += 1
         offset += limit
 
     duration = (datetime.utcnow() - start_time).total_seconds()
     # Zapisujemy wynik synchronizacji nowych faktur w tabeli SyncStatus
-    sync_record = SyncStatus(sync_type="new", processed=processed_count, duration=duration)
+    sync_record = SyncStatus(
+        sync_type="new", 
+        processed=processed_count, 
+        duration=duration,
+        new_cases=new_cases_count,
+        api_calls=api_calls
+    )
     db.session.add(sync_record)
     db.session.commit()
     print(f"[sync_new_invoices] Przetworzono {processed_count} nowych faktur (offset={start_offset}) w {duration:.2f}s")
-    return processed_count
+    return processed_count, new_cases_count, api_calls
 
 def update_existing_cases(start_offset=0, limit=100):
     """
@@ -178,6 +195,9 @@ def update_existing_cases(start_offset=0, limit=100):
     """
     client = InFaktAPIClient()
     processed_count = 0
+    updated_cases = 0
+    closed_cases = 0
+    api_calls = 0
     offset = start_offset
     start_time = datetime.utcnow()
     
@@ -240,6 +260,7 @@ def update_existing_cases(start_offset=0, limit=100):
         url = f"{client.base_url}/invoices.json"
         try:
             response = client._session.get(url, headers=client.headers, params=params)
+            api_calls += 1
             response.raise_for_status()
         except Exception as e:
             print(f"[update_existing_cases] Błąd przy pobieraniu partii offset={offset}: {e}")
@@ -293,8 +314,12 @@ def update_existing_cases(start_offset=0, limit=100):
             case_obj = Case.query.filter_by(case_number=local_inv.invoice_number).first()
             if case_obj:
                 if local_inv.status.lower() == "paid" or local_inv.paid_price >= local_inv.gross_price:
+                    if case_obj.status != "closed_oplacone":
+                        closed_cases += 1
                     case_obj.status = "closed_oplacone"
                 else:
+                    if case_obj.status != "active":
+                        updated_cases += 1
                     case_obj.status = "active"
                 db.session.add(case_obj)
                 db.session.commit()
@@ -302,11 +327,18 @@ def update_existing_cases(start_offset=0, limit=100):
         offset += limit
 
     duration = (datetime.utcnow() - start_time).total_seconds()
-    sync_record = SyncStatus(sync_type="update", processed=processed_count, duration=duration)
+    sync_record = SyncStatus(
+        sync_type="update", 
+        processed=processed_count, 
+        duration=duration,
+        updated_cases=updated_cases,
+        closed_cases=closed_cases,
+        api_calls=api_calls
+    )
     db.session.add(sync_record)
     db.session.commit()
     print(f"[update_existing_cases] Zaktualizowano {processed_count} faktur (offset={start_offset}) w {duration:.2f}s")
-    return processed_count
+    return processed_count, updated_cases, closed_cases, api_calls
 
 def run_full_sync():
     """
@@ -316,12 +348,20 @@ def run_full_sync():
     start_time = datetime.utcnow()
     
     # Run sync processes
-    new_count = sync_new_invoices()
-    update_count = update_existing_cases()
+    new_count, new_cases, new_api_calls = sync_new_invoices()
+    update_count, updated_cases, closed_cases, update_api_calls = update_existing_cases()
     
     total = new_count + update_count
     duration = (datetime.utcnow() - start_time).total_seconds()
-    sync_record = SyncStatus(sync_type="full", processed=total, duration=duration)
+    sync_record = SyncStatus(
+        sync_type="full", 
+        processed=total, 
+        duration=duration,
+        new_cases=new_cases,
+        updated_cases=updated_cases,
+        closed_cases=closed_cases,
+        api_calls=new_api_calls + update_api_calls
+    )
     db.session.add(sync_record)
     db.session.commit()
     print(f"[run_full_sync] Łącznie przetworzono {total} faktur (nowe: {new_count}, aktualizacje: {update_count}) w {duration:.2f}s")
