@@ -11,6 +11,7 @@ class InFaktAPIClient:
     def __init__(self):
         self.api_key = os.getenv('INFAKT_API_KEY')
         self.base_url = "https://api.infakt.pl/api/v3"
+        self.api_call_counter = 0
         if not self.api_key or self.api_key == "YOUR_INFAKT_API_KEY":
             raise ValueError("Klucz API inFakt nie został ustawiony. Sprawdź plik .env!")
         self.headers = {
@@ -24,6 +25,16 @@ class InFaktAPIClient:
             level=logging.INFO,
             format='%(asctime)s:%(levelname)s:%(message)s'
         )
+
+    def reset_api_counter(self):
+        """Reset API call counter"""
+        old_count = self.api_call_counter
+        self.api_call_counter = 0
+        return old_count
+
+    def get_api_counter(self):
+        """Get current API call count"""
+        return self.api_call_counter
 
     def test(self):
         print("InFaktAPIClient jest poprawnie skonfigurowany!")
@@ -40,6 +51,7 @@ class InFaktAPIClient:
             params['order'] = order
         try:
             response = self._session.get(url, headers=self.headers, params=params)
+            self.api_call_counter += 1
             response.raise_for_status()
             data = response.json()
             logging.info(f"Pobrano listę faktur: offset={offset}, limit={limit}")
@@ -65,6 +77,7 @@ class InFaktAPIClient:
         }
         try:
             response = self._session.get(url, headers=self.headers, params=params)
+            self.api_call_counter += 1
             response.raise_for_status()
             data = response.json()
             logging.info(f"Pobrano aktywne faktury: offset={offset}, limit={limit}")
@@ -72,6 +85,7 @@ class InFaktAPIClient:
             # Dodatkowo pobieramy faktury o statusie 'printed'
             params["q[status_eq]"] = "printed"
             response_printed = self._session.get(url, headers=self.headers, params=params)
+            self.api_call_counter += 1
             response_printed.raise_for_status()
             data_printed = response_printed.json()
             invoices_printed = data_printed.get('entities', [])
@@ -87,6 +101,7 @@ class InFaktAPIClient:
         params = {"offset": offset, "limit": limit}
         try:
             response = self._session.get(url, headers=self.headers, params=params)
+            self.api_call_counter += 1
             response.raise_for_status()
             data = response.json()
             logging.info(f"Pobrano listę klientów: offset={offset}, limit={limit}")
@@ -101,6 +116,7 @@ class InFaktAPIClient:
         url = f"{self.base_url}/clients/{client_id}.json"
         try:
             response = self._session.get(url, headers=self.headers)
+            self.api_call_counter += 1
             response.raise_for_status()
             client = response.json()
             logging.info(f"Pobrano szczegóły klienta: {client_id}")

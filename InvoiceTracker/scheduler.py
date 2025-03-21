@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 # from .update_db import update_database
 
 from .models import db, Invoice, NotificationLog, Case, NotificationSettings
-from .shipping_settings import NOTIFICATION_OFFSETS
 from .mail_templates import MAIL_TEMPLATES
 from .send_email import send_email
 from .mail_utils import generate_email
@@ -91,22 +90,25 @@ def run_mail_with_context(app):
                         # Split multiple emails and send to each
                         emails = [email.strip() for email in inv.client_email.split(',') if email.strip()]
                         email_sent_success = False
+                        email_errors = []
                         
                         for email in emails:
                             retries = 3
                             for attempt in range(retries):
                                 try:
-                                    send_email(email, subject, body_html, html=True)
-                                    email_sent_success = True
-                                    break
+                                    if send_email(email, subject, body_html, html=True):
+                                        email_sent_success = True
+                                        break
                                 except Exception as e:
-                                    print(f"[scheduler] Błąd wysyłki maila do {email} dla faktury {inv.invoice_number} (próba {attempt+1}): {e}")
+                                    error_msg = f"[scheduler] Błąd wysyłki maila do {email} dla faktury {inv.invoice_number} (próba {attempt+1}): {e}"
+                                    print(error_msg)
+                                    email_errors.append(error_msg)
                                     if attempt == retries - 1:  # Last attempt
                                         error_count += 1
                                     time.sleep(5)
 
                         if email_sent_success:
-                            # Log the notification
+                            # Log the notification only if email was sent successfully
                             new_log = NotificationLog(
                                 client_id=inv.client_id,
                                 invoice_number=inv.invoice_number,
@@ -122,16 +124,19 @@ def run_mail_with_context(app):
                             processed_count += 1
                             notification_sent = True
                             print(f"[scheduler] Wysłano mail dla {inv.invoice_number}, etap={stage_name}")
+                        else:
+                            error_msg = "\n".join(email_errors)
+                            print(f"[scheduler] Nie udało się wysłać maila dla {inv.invoice_number}: {error_msg}")
 
-                # Auto-close case after stage 5
+                # Auto-close case after stage 5 only if notification was sent successfully
                 if notification_sent:
                     # Check if stage 5 was ever sent
                     logs = NotificationLog.query.filter_by(invoice_number=inv.invoice_number).all()
                     stage5_sent = any(log.stage == "Przekazanie sprawy do windykatora zewnętrznego" for log in logs)
                     if stage5_sent:
                         case_obj = Case.query.filter_by(case_number=inv.invoice_number).first()
-                        if case_obj and case_obj.status == "active":
-                            case_obj.status = "closed_nieoplacone"
+                        if case_obj and case_obj.status != "closed_oplacone":
+                            case_obj.status = "closed_oplacone"
                             db.session.add(case_obj)
                             db.session.commit()
                             print(f"[scheduler] Zamknięto sprawę {inv.invoice_number} (wysłano etap 5)")
@@ -149,6 +154,14 @@ def start_scheduler(app):
     """
     scheduler = BackgroundScheduler()
     scheduler.add_job(lambda: run_sync_with_context(app), 'cron', hour=16, minute=55)
-    scheduler.add_job(lambda: run_mail_with_context(app), 'cron', hour=17, minute=0)
+    scheduler.add_job(lambda: run_mail_with_context(app), 'cron', hour=11, minute=49)
     scheduler.start()
+    
+    print("\n" + "="*50)
+    print("SCHEDULER STATUS:")
+    print(f"- Sync job scheduled for: 16:55")
+    print(f"- Email job scheduled for: 17:00")
+    print(f"- Current time: {datetime.now().strftime('%H:%M:%S')}")
+    print("="*50 + "\n")
+    
     print("[scheduler] Scheduler uruchomiony (z app context).")

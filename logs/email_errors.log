@@ -1,0 +1,313 @@
+2025-03-21 11:29:42,517 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 11:29:42,517 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 11:34:00,733 - INFO - 127.0.0.1 - - [21/Mar/2025 11:34:00] "GET / HTTP/1.1" 200 -
+2025-03-21 11:45:00,534 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 11:45:00,534 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 11:45:32,893 - INFO - 127.0.0.1 - - [21/Mar/2025 11:45:32] "[32mGET /register HTTP/1.1[0m" 302 -
+2025-03-21 11:45:32,906 - INFO - 127.0.0.1 - - [21/Mar/2025 11:45:32] "GET /login HTTP/1.1" 200 -
+2025-03-21 11:45:35,385 - INFO - 127.0.0.1 - - [21/Mar/2025 11:45:35] "[32mGET / HTTP/1.1[0m" 302 -
+2025-03-21 11:45:35,390 - INFO - 127.0.0.1 - - [21/Mar/2025 11:45:35] "GET /login HTTP/1.1" 200 -
+2025-03-21 11:45:40,697 - INFO - 127.0.0.1 - - [21/Mar/2025 11:45:40] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-03-21 11:45:40,794 - INFO - 127.0.0.1 - - [21/Mar/2025 11:45:40] "GET / HTTP/1.1" 200 -
+2025-03-21 11:48:15,407 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 11:48:15,407 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 11:48:28,996 - INFO - 127.0.0.1 - - [21/Mar/2025 11:48:28] "GET / HTTP/1.1" 200 -
+2025-03-21 14:35:09,438 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 14:35:09,438 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 14:40:41,828 - INFO - 127.0.0.1 - - [21/Mar/2025 14:40:41] "GET /client/19124754 HTTP/1.1" 200 -
+2025-03-21 14:40:46,472 - INFO - 127.0.0.1 - - [21/Mar/2025 14:40:46] "GET / HTTP/1.1" 200 -
+2025-03-21 14:41:01,951 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:01] "GET /?search=&sort_by=client_company_name&sort_order=asc HTTP/1.1" 200 -
+2025-03-21 14:41:05,249 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:05] "GET /?search=&sort_by=client_company_name&sort_order=desc HTTP/1.1" 200 -
+2025-03-21 14:41:07,697 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:07] "GET /?search=&sort_by=client_company_name&sort_order=desc HTTP/1.1" 200 -
+2025-03-21 14:41:13,066 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:13] "GET /?search=21020077&sort_by=client_company_name&sort_order=desc HTTP/1.1" 200 -
+2025-03-21 14:41:20,902 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:20] "GET / HTTP/1.1" 200 -
+2025-03-21 14:41:22,987 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:22] "GET / HTTP/1.1" 200 -
+2025-03-21 14:41:25,455 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:25] "GET /sync_status HTTP/1.1" 200 -
+2025-03-21 14:41:29,387 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:29] "GET /sync_status HTTP/1.1" 200 -
+2025-03-21 14:41:30,536 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:30] "GET /completed HTTP/1.1" 200 -
+2025-03-21 14:41:35,387 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:35] "GET /completed HTTP/1.1" 200 -
+2025-03-21 14:41:39,353 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:39] "GET /shipping_settings HTTP/1.1" 200 -
+2025-03-21 14:41:50,548 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:50] "[32mPOST /shipping_settings HTTP/1.1[0m" 302 -
+2025-03-21 14:41:50,864 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:50] "GET /shipping_settings HTTP/1.1" 200 -
+2025-03-21 14:41:59,814 - INFO - 127.0.0.1 - - [21/Mar/2025 14:41:59] "GET /shipping_settings HTTP/1.1" 200 -
+2025-03-21 14:42:02,319 - INFO - 127.0.0.1 - - [21/Mar/2025 14:42:02] "[32mPOST /shipping_settings HTTP/1.1[0m" 302 -
+2025-03-21 14:42:02,564 - INFO - 127.0.0.1 - - [21/Mar/2025 14:42:02] "GET /shipping_settings HTTP/1.1" 200 -
+2025-03-21 14:42:07,485 - INFO - 127.0.0.1 - - [21/Mar/2025 14:42:07] "GET / HTTP/1.1" 200 -
+2025-03-21 14:42:08,483 - INFO - 127.0.0.1 - - [21/Mar/2025 14:42:08] "GET / HTTP/1.1" 200 -
+2025-03-21 14:42:09,047 - INFO - 127.0.0.1 - - [21/Mar/2025 14:42:09] "GET /shipping_settings HTTP/1.1" 200 -
+2025-03-21 14:42:15,833 - INFO - 127.0.0.1 - - [21/Mar/2025 14:42:15] "GET / HTTP/1.1" 200 -
+2025-03-21 14:43:19,327 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 14:43:19,327 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 14:43:19,327 - INFO -  * Restarting with stat
+2025-03-21 14:47:22,529 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 14:47:22,529 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 15:17:10,957 - ERROR - Error: Path doesn't exist: 'C:\\Users\\X\\Desktop\\Wordking-dir\\InvoiceTracker\\migrations'.  Please use the 'init' command to create a new scripts folder.
+2025-03-21 15:17:22,626 - ERROR - Error: Path doesn't exist: 'C:\\Users\\X\\Desktop\\Wordking-dir\\InvoiceTracker\\migrations'.  Please use the 'init' command to create a new scripts folder.
+2025-03-21 15:18:04,433 - ERROR - Error: Path doesn't exist: 'C:\\Users\\X\\Desktop\\Wordking-dir\\InvoiceTracker\\migrations'.  Please use the 'init' command to create a new scripts folder.
+2025-03-21 15:20:18,637 - ERROR - Error: Path doesn't exist: 'C:\\Users\\X\\Desktop\\Wordking-dir\\InvoiceTracker\\migrations'.  Please use the 'init' command to create a new scripts folder.
+2025-03-21 15:24:17,273 - ERROR - Error: Path doesn't exist: 'C:\\Users\\X\\Desktop\\Wordking-dir\\InvoiceTracker\\migrations'.  Please use the 'init' command to create a new scripts folder.
+2025-03-21 15:24:27,756 - ERROR - Error: Path doesn't exist: 'C:\\Users\\X\\Desktop\\Wordking-dir\\InvoiceTracker\\migrations'.  Please use the 'init' command to create a new scripts folder.
+2025-03-21 15:24:42,143 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 15:24:42,143 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 15:24:55,763 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.100.7:8080
+2025-03-21 15:24:55,763 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 15:24:55,763 - INFO -  * Restarting with stat
+2025-03-21 15:24:56,766 - WARNING -  * Debugger is active!
+2025-03-21 15:24:56,770 - INFO -  * Debugger PIN: 351-701-917
+2025-03-21 15:26:31,714 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.100.7:8080
+2025-03-21 15:26:31,714 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 15:26:31,714 - INFO -  * Restarting with stat
+2025-03-21 15:26:32,675 - WARNING -  * Debugger is active!
+2025-03-21 15:26:32,675 - INFO -  * Debugger PIN: 351-701-917
+2025-03-21 15:26:52,493 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 15:26:52,493 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 15:26:54,575 - INFO - 127.0.0.1 - - [21/Mar/2025 15:26:54] "[32mGET / HTTP/1.1[0m" 302 -
+2025-03-21 15:26:54,599 - INFO - 127.0.0.1 - - [21/Mar/2025 15:26:54] "GET /login HTTP/1.1" 200 -
+2025-03-21 15:26:59,052 - INFO - 127.0.0.1 - - [21/Mar/2025 15:26:59] "POST /login HTTP/1.1" 200 -
+2025-03-21 15:27:03,473 - INFO - 127.0.0.1 - - [21/Mar/2025 15:27:03] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-03-21 15:27:03,577 - INFO - 127.0.0.1 - - [21/Mar/2025 15:27:03] "GET / HTTP/1.1" 200 -
+2025-03-21 15:27:15,462 - ERROR - Exception on /sync_status [GET]
+Traceback (most recent call last):
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedColumn: column sync_status.cases_created does not exist
+LINE 1: ...mp, sync_status.duration AS sync_status_duration, sync_statu...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 2529, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 1825, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 1823, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 1799, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\InvoiceTracker\app.py", line 620, in sync_status
+    statuses = SyncStatus.query.order_by(SyncStatus.timestamp.desc()).limit(20).all()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\query.py", line 2699, in all
+    return self._iter().all()  # type: ignore
+           ^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\query.py", line 2853, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\context.py", line 305, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\sql\elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column sync_status.cases_created does not exist
+LINE 1: ...mp, sync_status.duration AS sync_status_duration, sync_statu...
+                                                             ^
+
+[SQL: SELECT sync_status.id AS sync_status_id, sync_status.sync_type AS sync_status_sync_type, sync_status.processed AS sync_status_processed, sync_status.timestamp AS sync_status_timestamp, sync_status.duration AS sync_status_duration, sync_status.cases_created AS sync_status_cases_created, sync_status.cases_updated AS sync_status_cases_updated, sync_status.cases_closed AS sync_status_cases_closed, sync_status.api_calls AS sync_status_api_calls 
+FROM sync_status ORDER BY sync_status.timestamp DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 20}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-03-21 15:27:15,576 - INFO - 127.0.0.1 - - [21/Mar/2025 15:27:15] "[35m[1mGET /sync_status HTTP/1.1[0m" 500 -
+2025-03-21 15:28:14,861 - ERROR - Exception on /sync_status [GET]
+Traceback (most recent call last):
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedColumn: column sync_status.cases_created does not exist
+LINE 1: ...mp, sync_status.duration AS sync_status_duration, sync_statu...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 2529, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 1825, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 1823, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 1799, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\InvoiceTracker\app.py", line 620, in sync_status
+    statuses = SyncStatus.query.order_by(SyncStatus.timestamp.desc()).limit(20).all()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\query.py", line 2699, in all
+    return self._iter().all()  # type: ignore
+           ^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\query.py", line 2853, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\context.py", line 305, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\sql\elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column sync_status.cases_created does not exist
+LINE 1: ...mp, sync_status.duration AS sync_status_duration, sync_statu...
+                                                             ^
+
+[SQL: SELECT sync_status.id AS sync_status_id, sync_status.sync_type AS sync_status_sync_type, sync_status.processed AS sync_status_processed, sync_status.timestamp AS sync_status_timestamp, sync_status.duration AS sync_status_duration, sync_status.cases_created AS sync_status_cases_created, sync_status.cases_updated AS sync_status_cases_updated, sync_status.cases_closed AS sync_status_cases_closed, sync_status.api_calls AS sync_status_api_calls 
+FROM sync_status ORDER BY sync_status.timestamp DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 20}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-03-21 15:28:14,864 - INFO - 127.0.0.1 - - [21/Mar/2025 15:28:14] "[35m[1mGET /sync_status HTTP/1.1[0m" 500 -
+2025-03-21 15:28:24,483 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 15:28:24,483 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 15:28:28,422 - ERROR - Exception on /sync_status [GET]
+Traceback (most recent call last):
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedColumn: column sync_status.cases_created does not exist
+LINE 1: ...mp, sync_status.duration AS sync_status_duration, sync_statu...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 2529, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 1825, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 1823, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\flask\app.py", line 1799, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\InvoiceTracker\app.py", line 620, in sync_status
+    statuses = SyncStatus.query.order_by(SyncStatus.timestamp.desc()).limit(20).all()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\query.py", line 2699, in all
+    return self._iter().all()  # type: ignore
+           ^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\query.py", line 2853, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\orm\context.py", line 305, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\sql\elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\X\Desktop\Wordking-dir\InvoiceTracker\env\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column sync_status.cases_created does not exist
+LINE 1: ...mp, sync_status.duration AS sync_status_duration, sync_statu...
+                                                             ^
+
+[SQL: SELECT sync_status.id AS sync_status_id, sync_status.sync_type AS sync_status_sync_type, sync_status.processed AS sync_status_processed, sync_status.timestamp AS sync_status_timestamp, sync_status.duration AS sync_status_duration, sync_status.cases_created AS sync_status_cases_created, sync_status.cases_updated AS sync_status_cases_updated, sync_status.cases_closed AS sync_status_cases_closed, sync_status.api_calls AS sync_status_api_calls 
+FROM sync_status ORDER BY sync_status.timestamp DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 20}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-03-21 15:28:28,440 - INFO - 127.0.0.1 - - [21/Mar/2025 15:28:28] "[35m[1mGET /sync_status HTTP/1.1[0m" 500 -
+2025-03-21 15:32:43,514 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 15:32:43,514 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-21 15:35:27,523 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-21 15:35:27,523 - INFO - [33mPress CTRL+C to quit[0m

@@ -533,10 +533,11 @@ def create_app():
             email_success = False
             email_errors = []
             emails = [email.strip() for email in inv.client_email.split(',') if email.strip()]
+            
             for email in emails:
                 try:
-                    send_email(email, subject, body_html, html=True)
-                    email_success = True
+                    if send_email(email, subject, body_html, html=True):
+                        email_success = True
                 except Exception as e:
                     email_errors.append(f"{email}: {str(e)}")
                     logging.error(f"Error sending to {email}: {e}")
@@ -546,6 +547,7 @@ def create_app():
                 flash(f"Błąd przy wysyłaniu wiadomości: {error_msg}", "danger")
                 return redirect(url_for('case_detail', case_number=case_number))
 
+            # Only proceed with updates if email was sent successfully
             # Update the invoice debt status
             inv.debt_status = mapped
             db.session.add(inv)
@@ -598,14 +600,8 @@ def create_app():
     def background_sync(app):
         with app.app_context():
             try:
-                start_time = datetime.utcnow()
-                # Use run_full_sync which doesn't depend on circular imports
-                processed = run_full_sync()
-                duration = (datetime.utcnow() - start_time).total_seconds()
-                # Zapis informacji w SyncStatus
-                record = SyncStatus(sync_type="full", processed=processed, duration=duration)
-                db.session.add(record)
-                db.session.commit()
+                # Use run_full_sync which already creates SyncStatus record
+                run_full_sync()
             except Exception as e:
                 logging.error(f"Background sync error: {e}")
 
@@ -702,7 +698,6 @@ def create_app():
         session.pop('logged_in', None)
         flash("Wylogowano.", "success")
         return redirect(url_for('login'))
-
     # Scheduler w tle
     with app.app_context():
         start_scheduler(app)
